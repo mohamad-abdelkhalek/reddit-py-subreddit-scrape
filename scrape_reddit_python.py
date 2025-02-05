@@ -1,68 +1,52 @@
-import requests
-from bs4 import BeautifulSoup
+import praw
 import csv
-import time
+from datetime import datetime
+import os
+from dotenv import load_dotenv
 
-# Function to scrape Reddit's r/python subreddit
 def scrape_reddit_python():
-    # Base URL for r/python
-    base_url = "https://www.reddit.com/r/python/"
+    # Load environment variables
+    load_dotenv()
     
-    # Headers to mimic a real browser
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
+    # Initialize Reddit API client
+    reddit = praw.Reddit(
+        client_id=os.getenv('REDDIT_CLIENT_ID'),
+        client_secret=os.getenv('REDDIT_CLIENT_SECRET'),
+        user_agent="Python:DataCollector:v1.0 (by /u/YOUR_USERNAME)"
+    )
     
-    # Send a GET request to the website
-    response = requests.get(base_url, headers=headers)
+    # Access the Python subreddit
+    subreddit = reddit.subreddit('python')
     
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Parse the HTML content
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Find all post containers
-        posts = soup.find_all("div", attrs={"data-testid": "post-container"})
-        
-        # Prepare a list to store the scraped data
-        data = []
-        
-        # Loop through each post and extract the title, URL, and upvote count
-        for post in posts:
-            # Extract title
-            title = post.find("h3").text if post.find("h3") else "No Title"
-            
-            # Extract URL
-            link = post.find("a", attrs={"data-click-id": "body"})["href"] if post.find("a", attrs={"data-click-id": "body"}) else "No Link"
-            full_link = f"https://www.reddit.com{link}" if link.startswith("/") else link
-            
-            # Extract upvote count
-            upvotes = post.find("div", attrs={"data-testid": "post-upvote-button"}).text if post.find("div", attrs={"data-testid": "post-upvote-button"}) else "0"
-            
-            # Append the data to the list
-            data.append([title, full_link, upvotes])
-        
-        # Save the data to a CSV file
-        with open("reddit_python.csv", "w", newline="", encoding="utf-8") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Title", "Link", "Upvotes"])  # Write header
-            writer.writerows(data)  # Write data rows
-        
-        print("Data saved to reddit_python.csv")
-        
-        # Print the data to the console
-        for index, item in enumerate(data, start=1):
-            print(f"{index}. Title: {item[0]}")
-            print(f"   Link: {item[1]}")
-            print(f"   Upvotes: {item[2]}")
-            print()
-    else:
-        print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+    # Prepare data list
+    data = []
+    
+    # Get hot posts from r/python
+    for post in subreddit.hot(limit=25):
+        data.append([
+            post.title,
+            f"https://www.reddit.com{post.permalink}",
+            post.score,
+            post.num_comments,
+            datetime.fromtimestamp(post.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+        ])
+    
+    # Save to CSV file
+    filename = f"reddit_python_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    with open(filename, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Title", "Link", "Score", "Comments", "Created"])
+        writer.writerows(data)
+    
+    print(f"Data saved to {filename}")
+    
+    # Print the data to console
+    for index, item in enumerate(data, start=1):
+        print(f"\n{index}. Title: {item[0]}")
+        print(f"   Link: {item[1]}")
+        print(f"   Score: {item[2]}")
+        print(f"   Comments: {item[3]}")
+        print(f"   Created: {item[4]}")
 
-# Main function
 if __name__ == "__main__":
-    # Scrape Reddit's r/python subreddit
     scrape_reddit_python()
-    
-    # Add a delay to respect the website's policies
-    time.sleep(2)
