@@ -49,3 +49,12 @@ def scrape_reddit_python():
             writer.writerows(data)  # Write data rows
         
         print("Data saved to reddit_python.csv")
+        
+        # Print the data to the console
+        for index, item in enumerate(data, start=1):
+            print(f"{index}. Title: {item[0]}")
+            print(f"   Link: {item[1]}")
+            print(f"   Upvotes: {item[2]}")
+            print()
+    else:
+        print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
