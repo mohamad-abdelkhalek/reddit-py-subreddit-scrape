@@ -41,3 +41,11 @@ def scrape_reddit_python():
             
             # Append the data to the list
             data.append([title, full_link, upvotes])
+            
+            # Save the data to a CSV file
+        with open("reddit_python.csv", "w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Title", "Link", "Upvotes"])  # Write header
+            writer.writerows(data)  # Write data rows
+        
+        print("Data saved to reddit_python.csv")
