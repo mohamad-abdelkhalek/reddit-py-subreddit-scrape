@@ -23,8 +23,8 @@ def scrape_reddit_python():
         
         # Find all post containers
         posts = soup.find_all("div", attrs={"data-testid": "post-container"})
-
-    # Prepare a list to store the scraped data
+        
+        # Prepare a list to store the scraped data
         data = []
         
         # Loop through each post and extract the title, URL, and upvote count
@@ -41,8 +41,8 @@ def scrape_reddit_python():
             
             # Append the data to the list
             data.append([title, full_link, upvotes])
-            
-            # Save the data to a CSV file
+        
+        # Save the data to a CSV file
         with open("reddit_python.csv", "w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
             writer.writerow(["Title", "Link", "Upvotes"])  # Write header
@@ -58,3 +58,11 @@ def scrape_reddit_python():
             print()
     else:
         print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
+
+# Main function
+if __name__ == "__main__":
+    # Scrape Reddit's r/python subreddit
+    scrape_reddit_python()
+    
+    # Add a delay to respect the website's policies
+    time.sleep(2)
