@@ -1,4 +1,4 @@
-# Reddit r/python Data Collector
+# Reddit r/python Data Scraper
 
 A Python script that uses the Reddit API to collect and analyze posts from the r/python subreddit. This tool fetches information such as post titles, scores, comment counts, and creation timestamps, saving the data in a CSV format for further analysis.
 
